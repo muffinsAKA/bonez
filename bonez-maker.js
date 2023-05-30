@@ -134,7 +134,7 @@
   `;
 
   // Iterate through the chat messages and create the message divs
-  for (const message of chatData.messages.slice(-20)) {
+  for (const message of chatData.messages.slice(-60)) {
     const { speaker, text } = message;
     const divClass = speaker === 'BONEZ' ? 'chat-message-bonez' : 'chat-message-user';
     const userBox = speaker === 'BONEZ' ? 'user-box-bonez' : 'user-box-muffins';
