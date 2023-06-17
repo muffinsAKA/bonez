@@ -1,4 +1,4 @@
-  (function() {
+(function() {
   function identifySpeaker() {
     const elements = document.getElementsByClassName('group');
     const messages = [];
@@ -6,17 +6,26 @@
       BONEZ: [],
       MUFFINS: []
     };
-  
+
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i];
-      const bgClass = element.classList.contains('bg-gray-50') ? 'bg-gray-50' : 'dark:bg-gray-800';
-      const pElement = element.querySelector('.prose > p');
-      
+      const proseElement = element.querySelector('.prose');
+
       let text = '';
       let speaker = '';
-  
-      if (pElement) {
-        text = pElement.innerText.trim();
+
+      if (proseElement) {
+        // Add handling for list elements
+        const listItems = proseElement.querySelectorAll('li');
+        let listText = '';
+        if (listItems.length > 0) {
+          listItems.forEach((li) => {
+            listText += '<li>' + li.innerText.trim() + '</li>';
+          });
+        }
+
+        const pElement = proseElement.querySelector('p');
+        text = (pElement ? pElement.innerText.trim() : '') + (listText ? '<ol>' + listText + '</ol>' : '');
         speaker = 'BONEZ';
       } else {
         const userDiv = document.evaluate(
@@ -26,27 +35,26 @@
           XPathResult.STRING_TYPE,
           null
         ).stringValue.trim();
-        
+
         if (userDiv) {
           text = userDiv;
           speaker = 'MUFFINS';
         }
       }
-  
+
       if (text) {
         text = text.toLowerCase();
         messages.push({ speaker, text });
         speakers[speaker].push(text);
       }
     }
-  
+
     return { messages, speakers };
   }
-  
+
   let chatData;
   chatData = identifySpeaker();
 
-  // Create the HTML code for the chat messages
   let htmlContent = `
   <!DOCTYPE html>
   <html lang="en">
@@ -84,12 +92,14 @@
       background-color: rgb(73, 240, 240);
       padding-left: 1em;
       padding-right: 2em;
+      padding-bottom: 1em;
       border-radius: 2px;
       font-family: 'Courier New', Courier, monospace;
     }
     .user-box-muffins {
       background-color: rgb(228, 137, 231);
       padding-left: 1em;
+      padding-bottom: 1em;
       padding-right: 2em;
       border-radius: 2px;
       font-family: 'Courier New', Courier, monospace;
@@ -133,7 +143,6 @@
     <div class="container">
   `;
 
-  // Iterate through the chat messages and create the message divs
   for (const message of chatData.messages.slice(-60)) {
     const { speaker, text } = message;
     const divClass = speaker === 'BONEZ' ? 'chat-message-bonez' : 'chat-message-user';
@@ -146,22 +155,20 @@
         <img class="avatar" src="${avatar}">
         <div class="${userBox}">
           <p class="sender-name">${speaker}</p>
-          <p class="message-text">${text}</p>
+          <div class="message-text">${text}</div>
         </div>
       </div>
     `;
   }
 
-  // Complete the HTML code
   htmlContent += `
     </div>
   </body>
   </html>
   `;
 
-  // Open a new window and inject the HTML code
   const newWindow = window.open();
   newWindow.document.open();
   newWindow.document.write(htmlContent);
   newWindow.document.close();
-  })();
+})();
